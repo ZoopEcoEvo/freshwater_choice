@@ -1,5 +1,5 @@
 ---
-title: TITLE HERE
+title: Effect of different water types of freshwater copepod survival
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -24,19 +24,113 @@ knitr::opts_chunk$set(
   collapse = T
 )
 
-theme_matt = function(base_size){
+theme_matt = function(base_size = 18,
+                      dark_text = "grey20"){
+  mid_text <-  monochromeR::generate_palette(dark_text, "go_lighter", n_colours = 5)[2]
+  light_text <-  monochromeR::generate_palette(dark_text, "go_lighter", n_colours = 5)[3]
+  
   ggpubr::theme_pubr(base_family="sans") %+replace% 
     theme(
-      panel.background  = element_blank(),
+      panel.background  = element_rect(fill="transparent", colour=NA), 
       plot.background = element_rect(fill="transparent", colour=NA), 
       legend.background = element_rect(fill="transparent", colour=NA),
       legend.key = element_rect(fill="transparent", colour=NA),
+      text = element_text(colour = mid_text, lineheight = 1.1),
+      title = element_text(size = base_size * 1.5,
+                           colour = dark_text),
+      axis.text = element_text(size = base_size,
+                               colour = mid_text),
+      axis.title = element_text(size = base_size * 1.2,
+                                margin = margin(0, 8, 0, 0)),
       legend.text = element_text(size=base_size * 0.9),
       legend.title = element_text(size = base_size * 0.9, 
                                   face = "bold"),
-      axis.text = element_text(size = base_size),
-      axis.title = element_text(size = base_size * 1.2),
-      title = element_text(size = base_size * 1.55)
+      plot.margin = margin(0.25, 0.25, 0.25, 0.25,"cm")
     )
 }
 ```
+
+Copepods were collected from Lake Champlain on April 26th 2023. Water temperature was ~7˚C. Several species were abundant, but we only examined survival of adult female *Leptodiaptomus sicilis* here. We expect results will be broadly generalizable to other species
+
+# Survival
+We examined survival in three different water types: 63-um filtered lake water, bottled spring water (Crystal Geyser brand), and reverse-osmosis filtered water. Survival was tracked for `r length(unique(surv_data$ID))`` individual copepods. Shown below is the change in survival over time. Lines for the different treatments are shown in different colors. Data for the two groups is lumped together.  
+
+```{r surv-plot}
+mort_data = mort_data %>%  
+  mutate("status" = if_else(death_day <= 14, 1, 0),
+         treatment = factor(treatment, levels = c("FLW","BSW","ROW"))
+)
+
+surv_model = survfit(Surv(death_day, status) ~ treatment, data = mort_data)
+
+#summary(surv_model, times = c(1:14))
+
+ggsurvplot(
+  fit = surv_model,
+  xlab = "Days",
+  ylab = "Survival Proportion",
+  title = "Kaplan-Meier Proportional Survival Estimates",
+  conf.int = TRUE,
+  pval = FALSE,
+  ggtheme = theme_matt())
+```
+
+Shown below are estimates of the proportional hazard ratio (the change in risk of mortality relative to the control) for the different treatments, but also for the two experimental replicates. 
+```{r cox-model}
+cox_model <- coxph(Surv(death_day, status) ~ treatment + exp_rep + volume, data = mort_data)
+
+#summary(cox_model)
+
+ggforest(cox_model, data = mort_data)
+
+```
+
+# Fecundity
+*Leptodiaptomus* retains eggs in loosely attached ovisacs, which allows us to measure fecundity. Here we refer to fecundity as the number of eggs contained in the clutch. 
+
+The initial clutch size (reflecting fecundity in the field) varied between `r paste(min(filter(clutch_data, clutch_num == 1)$clutch_size), "and", max(filter(clutch_data, clutch_num == 1)$clutch_size), sep = " ")` eggs. 
+
+```{r}
+clutch_data %>% 
+  filter(clutch_num == 1) %>%  
+  ggplot(aes(x = clutch_size)) +
+  geom_histogram(binwidth = 1) + 
+  labs(x = "Fecundity (number of eggs)") + 
+  theme_matt()
+```
+
+Females typically produced multiple broods during the survival assay. 
+```{r}
+ggplot(clutch_data, aes(x = clutch_num, y = clutch_size, group = ID, colour = treatment)) + 
+  geom_line(size = 2) + 
+  scale_x_continuous(breaks = seq(from = 1, to = max(clutch_data$clutch_num))) + 
+  labs(x = "Clutch Number", 
+       y = "Fecundity (number of eggs)") + 
+  theme_matt()
+```
+
+Eggs took about `r round(mean(clutch_data$clutch_hold_time))` days to hatch. 
+```{r}
+ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) + 
+  facet_grid(clutch_num~.) + 
+  geom_boxplot() + 
+  labs(x = "Water Treatment", 
+       y = "Clutch Hold Time (days)") + 
+  theme_matt()
+```
+
+There was about `r round(mean(clutch_data$pre_clutch_time, na.rm = T))` days between clutches. 
+
+```{r}
+ggplot(clutch_data, aes(x = treatment, y = pre_clutch_time)) + 
+  facet_grid(clutch_num~.) + 
+  geom_boxplot() + 
+  labs(x = "Water Treatment", 
+       y = "Time Between Clutches (days)") + 
+  theme_matt()
+```
+
+Alternative plots: 
+- Line plots for clutch hold time and pre-clutch time
+- Estimation plots 
+
