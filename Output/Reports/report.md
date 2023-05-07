@@ -1,6 +1,6 @@
 Effect of different water types of freshwater copepod survival
 ================
-2023-05-02
+Current as of 2023-05-07
 
 - <a href="#survival" id="toc-survival">Survival</a>
 - <a href="#fecundity" id="toc-fecundity">Fecundity</a>
@@ -97,7 +97,7 @@ if(length(unique(clutch_data$clutch_num)) > 1){
 
 <img src="../Figures/markdown/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
 
-Eggs took between 1 and 6 days to hatch.
+Eggs took between 1 and 8 days to hatch.
 
 ``` r
 ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) + 
