@@ -40,8 +40,12 @@ theme_matt = function(base_size = 18,
                            colour = dark_text),
       axis.text = element_text(size = base_size,
                                colour = mid_text),
-      axis.title = element_text(size = base_size * 1.2,
-                                margin = margin(0, 8, 0, 0)),
+      axis.title = element_text(size = base_size * 1.2),
+      axis.title.y = element_text(angle = 90,
+                                  vjust = 4,
+                                  margin = margin(t = 0, r = 0, b = 0, l = 10)),
+      axis.title.x = element_text(vjust = -1,
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
       legend.text = element_text(size=base_size * 0.9),
       legend.title = element_text(size = base_size * 0.9, 
                                   face = "bold"),
@@ -57,7 +61,7 @@ We examined survival in three different water types: 63-um filtered lake water, 
 
 ```{r surv-plot}
 mort_data = mort_data %>%  
-  mutate("status" = if_else(death_day <= 14, 1, 0),
+  mutate("status" = if_else(death_day <= max(mort_data$death_day) - 1, 1, 0),
          treatment = factor(treatment, levels = c("FLW","BSW","ROW")),
          exp_rep = factor(exp_rep, levels = c("W","F"))
   )
@@ -84,6 +88,16 @@ cox_model <- coxph(Surv(death_day, status) ~ treatment + exp_rep + volume, data 
 
 ggforest(cox_model, data = mort_data)
 
+```
+
+# Body Size 
+After 20 days, surviving females were measured (prosome length; mm). Sizes ranged from `r paste(min(size_data$length), " mm to ", max(size_data$length), " mm", sep = "")`.
+
+```{r}
+ggplot(size_data, aes(x = length)) + 
+  geom_histogram(binwidth = 0.025, colour = "black") + 
+  labs(x = "Prosome Length (mm)") + 
+  theme_matt()
 ```
 
 # Fecundity
@@ -131,14 +145,18 @@ ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) +
   theme_matt()
 ```
 
+We might expect that larger females produce larger clutches of eggs. While limited by the small sample size, we see a postive trend here.     
 ```{r}
-# There was about `r round(mean(clutch_data$pre_clutch_time, na.rm = T))` days between clutches. 
+size_egg = inner_join(clutch_data, mutate(size_data, cup = as.numeric(cup)), by = c("exp_rep", "cup", "treatment", "volume")) %>% 
+  select(exp_rep, cup, treatment, clutch_size, length)
 
-# ggplot(clutch_data, aes(x = treatment, y = pre_clutch_time)) + 
-#   facet_grid(clutch_num~.) + 
-#   geom_boxplot() + 
-#   labs(x = "Water Treatment", 
-#        y = "Time Between Clutches (days)") + 
-#   theme_matt()
+ggplot(size_egg, aes(x = length, y = clutch_size)) + 
+  geom_smooth(method = "lm", size = 2, colour = "grey70") + 
+  geom_point(size = 4, aes(colour = treatment)) + 
+  scale_colour_manual(values = c("BSW" = "turquoise3", "FLW" = "darkolivegreen3")) + 
+  labs(x = "Prosome Length (mm)", 
+       y = "Clutch Size (# eggs)") + 
+  theme_matt()
 ```
+
 

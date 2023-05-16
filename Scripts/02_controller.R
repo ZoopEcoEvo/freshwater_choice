@@ -13,7 +13,7 @@ knit_manuscript = F #Compiles manuscript draft
 ### Read in the RAW data ###
 ############################
 raw_surv_data = readxl::read_excel(path = "Data/raw_surv_data.xlsx")
-raw_fecund_data = readxl::read_excel(path = "Data/raw_fecund_data.xlsx")
+raw_fecund_data = readxl::read_excel(path = "Data/raw_fecund_data.xlsx", na = "NA")
 
 if(process_data == T){
   source(file = "Scripts/01_data_processing.R")
@@ -25,6 +25,8 @@ if(process_data == T){
 surv_data = read.csv(file = "Output/Data/surv.csv")
 mort_data = read.csv(file = "Output/Data/mort.csv")
 clutch_data = read.csv(file = "Output/Data/clutch_data.csv")
+size_data = readxl::read_excel(path = "Data/raw_size_data.xlsx", na = "NA") %>%  
+  drop_na(length)
 
 if(make_report == T){
   render(input = "Output/Reports/report.Rmd", #Input the path to your .Rmd file here

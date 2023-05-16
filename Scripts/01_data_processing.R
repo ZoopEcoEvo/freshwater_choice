@@ -29,7 +29,7 @@ mort_data = surv %>%
   mutate(day = as.numeric(day)) %>% 
   filter(day == max(day)) %>%  # Filters to just the last day each individual is recorded as alive
   mutate(death_day = day + 1) %>%  # Which day the individual would have been recorded as dead. 
-  # NOTE - this is "force" death for individuals that survived the entire experiment, but this is accounted for in the follow up analyses
+  # NOTE - this will "force" death for individuals that survived the entire experiment, but this is accounted for in the follow up analyses
   select(ID, exp_rep, cup, treatment, volume, death_day)
 
 ### Writes data to output directory 

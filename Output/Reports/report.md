@@ -1,8 +1,9 @@
 Effect of different water types of freshwater copepod survival
 ================
-Current as of 2023-05-07
+Current as of 2023-05-16
 
 - <a href="#survival" id="toc-survival">Survival</a>
+- <a href="#body-size" id="toc-body-size">Body Size</a>
 - <a href="#fecundity" id="toc-fecundity">Fecundity</a>
 
 Copepods were collected from Lake Champlain on April 26th 2023. Water
@@ -21,7 +22,7 @@ lumped together.
 
 ``` r
 mort_data = mort_data %>%  
-  mutate("status" = if_else(death_day <= 14, 1, 0),
+  mutate("status" = if_else(death_day <= max(mort_data$death_day) - 1, 1, 0),
          treatment = factor(treatment, levels = c("FLW","BSW","ROW")),
          exp_rep = factor(exp_rep, levels = c("W","F"))
   )
@@ -56,6 +57,20 @@ ggforest(cox_model, data = mort_data)
 
 <img src="../Figures/markdown/cox-model-1.png" style="display: block; margin: auto;" />
 
+# Body Size
+
+After 20 days, surviving females were measured (prosome length; mm).
+Sizes ranged from 0.784 mm to 0.87 mm.
+
+``` r
+ggplot(size_data, aes(x = length)) + 
+  geom_histogram(binwidth = 0.025, colour = "black") + 
+  labs(x = "Prosome Length (mm)") + 
+  theme_matt()
+```
+
+<img src="../Figures/markdown/unnamed-chunk-1-1.png" style="display: block; margin: auto;" />
+
 # Fecundity
 
 *Leptodiaptomus* retains eggs in loosely attached ovisacs, which allows
@@ -74,7 +89,7 @@ clutch_data %>%
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-1-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
 
 ``` r
 if(length(unique(clutch_data$clutch_num)) > 1){
@@ -95,7 +110,7 @@ if(length(unique(clutch_data$clutch_num)) > 1){
 }
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
 Eggs took between 1 and 8 days to hatch.
 
@@ -109,15 +124,22 @@ ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) +
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
+
+We might expect that larger females produce larger clutches of eggs.
+While limited by the small sample size, we see a postive trend here.
 
 ``` r
-# There was about `r round(mean(clutch_data$pre_clutch_time, na.rm = T))` days between clutches. 
+size_egg = inner_join(clutch_data, mutate(size_data, cup = as.numeric(cup)), by = c("exp_rep", "cup", "treatment", "volume")) %>% 
+  select(exp_rep, cup, treatment, clutch_size, length)
 
-# ggplot(clutch_data, aes(x = treatment, y = pre_clutch_time)) + 
-#   facet_grid(clutch_num~.) + 
-#   geom_boxplot() + 
-#   labs(x = "Water Treatment", 
-#        y = "Time Between Clutches (days)") + 
-#   theme_matt()
+ggplot(size_egg, aes(x = length, y = clutch_size)) + 
+  geom_smooth(method = "lm", size = 2, colour = "grey70") + 
+  geom_point(size = 4, aes(colour = treatment)) + 
+  scale_colour_manual(values = c("BSW" = "turquoise3", "FLW" = "darkolivegreen3")) + 
+  labs(x = "Prosome Length (mm)", 
+       y = "Clutch Size (# eggs)") + 
+  theme_matt()
 ```
+
+<img src="../Figures/markdown/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
