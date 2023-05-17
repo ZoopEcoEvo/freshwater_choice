@@ -1,6 +1,6 @@
 Effect of different water types of freshwater copepod survival
 ================
-Current as of 2023-05-16
+Current as of 2023-05-17
 
 - <a href="#survival" id="toc-survival">Survival</a>
 - <a href="#body-size" id="toc-body-size">Body Size</a>
@@ -60,7 +60,7 @@ ggforest(cox_model, data = mort_data)
 # Body Size
 
 After 20 days, surviving females were measured (prosome length; mm).
-Sizes ranged from 0.784 mm to 0.87 mm.
+Sizes ranged from 0.784 mm to 0.915 mm.
 
 ``` r
 ggplot(size_data, aes(x = length)) + 
@@ -126,8 +126,15 @@ ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) +
 
 <img src="../Figures/markdown/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
+``` r
+size_fec.model = lm(data = size_egg, clutch_size ~ length)
+
+egg_slope = coefficients(size_fec.model)[2]
+```
+
 We might expect that larger females produce larger clutches of eggs.
-While limited by the small sample size, we see a postive trend here.
+While limited by the small sample size, we see a positive trend here,
+where fecundity increases by about 62.8 eggs per 0.1 mm in size.
 
 ``` r
 size_egg = inner_join(clutch_data, mutate(size_data, cup = as.numeric(cup)), by = c("exp_rep", "cup", "treatment", "volume")) %>% 
@@ -142,4 +149,14 @@ ggplot(size_egg, aes(x = length, y = clutch_size)) +
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
+
+``` r
+knitr::kable(car::Anova(size_fec.model, type = "III"))
+```
+
+|             |   Sum Sq |  Df |   F value |   Pr(\>F) |
+|:------------|---------:|----:|----------:|----------:|
+| (Intercept) | 44.54544 |   1 |  7.101053 | 0.0184876 |
+| length      | 70.11445 |   1 | 11.177046 | 0.0048288 |
+| Residuals   | 87.82305 |  14 |        NA |        NA |

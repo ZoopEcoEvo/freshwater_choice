@@ -145,7 +145,14 @@ ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) +
   theme_matt()
 ```
 
-We might expect that larger females produce larger clutches of eggs. While limited by the small sample size, we see a postive trend here.     
+```{r}
+size_fec.model = lm(data = size_egg, clutch_size ~ length)
+
+egg_slope = coefficients(size_fec.model)[2]
+```
+
+We might expect that larger females produce larger clutches of eggs. While limited by the small sample size, we see a positive trend here, where fecundity increases by about `r round(unname(egg_slope), digits = 1)` eggs per 0.1 mm in size.
+
 ```{r}
 size_egg = inner_join(clutch_data, mutate(size_data, cup = as.numeric(cup)), by = c("exp_rep", "cup", "treatment", "volume")) %>% 
   select(exp_rep, cup, treatment, clutch_size, length)
@@ -157,6 +164,10 @@ ggplot(size_egg, aes(x = length, y = clutch_size)) +
   labs(x = "Prosome Length (mm)", 
        y = "Clutch Size (# eggs)") + 
   theme_matt()
+```
+
+```{r}
+knitr::kable(car::Anova(size_fec.model, type = "III"))
 ```
 
 
