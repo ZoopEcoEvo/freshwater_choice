@@ -40,7 +40,7 @@ ggsurvplot(
   pval = FALSE)
 ```
 
-<img src="../Figures/markdown/surv-plot-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/surv-curves-1.png" style="display: block; margin: auto;" />
 
 Shown below are estimates of the proportional hazard ratio (the change
 in risk of mortality relative to the control) for the different
@@ -55,7 +55,7 @@ cox_model <- coxph(Surv(death_day, status) ~ treatment + exp_rep + volume, data 
 ggforest(cox_model, data = mort_data)
 ```
 
-<img src="../Figures/markdown/cox-model-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/hazard-ratios-1.png" style="display: block; margin: auto;" />
 
 # Body Size
 
@@ -69,7 +69,7 @@ ggplot(size_data, aes(x = length)) +
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-1-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/size-hist-1.png" style="display: block; margin: auto;" />
 
 # Fecundity
 
@@ -89,28 +89,7 @@ clutch_data %>%
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
-
-``` r
-if(length(unique(clutch_data$clutch_num)) > 1){
-  ggplot(clutch_data, aes(x = clutch_num, y = clutch_size, group = ID, colour = treatment)) + 
-    geom_point(size = 2) + 
-    geom_line(linewidth = 2) + 
-    scale_x_continuous(breaks = seq(from = 1, to = max(clutch_data$clutch_num))) + 
-    labs(x = "Clutch Number", 
-         y = "Fecundity (number of eggs)") + 
-    theme_matt()
-}else{
-  ggplot(clutch_data, aes(x = treatment, y = clutch_size)) + 
-    geom_boxplot(outlier.colour = NA) + 
-    geom_point(size = 3, alpha = 0.4, position = position_jitter(width = 0.05, height = 0)) + 
-    labs(x = "Treatment", 
-         y = "Fecundity (number of eggs)") + 
-    theme_matt()
-}
-```
-
-<img src="../Figures/markdown/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/clutch-hist-1.png" style="display: block; margin: auto;" />
 
 Eggs took between 1 and 8 days to hatch.
 
@@ -124,7 +103,7 @@ ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) +
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/hold-times-1.png" style="display: block; margin: auto;" />
 
 ``` r
 size_fec.model = lm(data = size_egg, clutch_size ~ length)
@@ -149,7 +128,7 @@ ggplot(size_egg, aes(x = length, y = clutch_size)) +
   theme_matt()
 ```
 
-<img src="../Figures/markdown/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
+<img src="../Figures/markdown/size-fecundity-plot-1.png" style="display: block; margin: auto;" />
 
 ``` r
 knitr::kable(car::Anova(size_fec.model, type = "III"))

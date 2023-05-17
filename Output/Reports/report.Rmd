@@ -59,7 +59,7 @@ Copepods were collected from Lake Champlain on April 26th 2023. Water temperatur
 # Survival
 We examined survival in three different water types: 63-um filtered lake water, bottled spring water (Crystal Geyser brand), and reverse-osmosis filtered water. Survival was tracked for `r length(unique(surv_data$ID))` individual copepods. Shown below is the change in survival over time. Lines for the different treatments are shown in different colors. Data for the two groups is lumped together.  
 
-```{r surv-plot}
+```{r surv-curves}
 mort_data = mort_data %>%  
   mutate("status" = if_else(death_day <= max(mort_data$death_day) - 1, 1, 0),
          treatment = factor(treatment, levels = c("FLW","BSW","ROW")),
@@ -80,7 +80,7 @@ ggsurvplot(
 ```
 
 Shown below are estimates of the proportional hazard ratio (the change in risk of mortality relative to the control) for the different treatments, but also for the two experimental replicates. 
-```{r cox-model}
+```{r hazard-ratios}
 
 cox_model <- coxph(Surv(death_day, status) ~ treatment + exp_rep + volume, data = mort_data)
 
@@ -93,7 +93,7 @@ ggforest(cox_model, data = mort_data)
 # Body Size 
 After 20 days, surviving females were measured (prosome length; mm). Sizes ranged from `r paste(min(size_data$length), " mm to ", max(size_data$length), " mm", sep = "")`.
 
-```{r}
+```{r size-hist}
 ggplot(size_data, aes(x = length)) + 
   geom_histogram(binwidth = 0.025, colour = "black") + 
   labs(x = "Prosome Length (mm)") + 
@@ -105,7 +105,7 @@ ggplot(size_data, aes(x = length)) +
 
 The initial clutch size (reflecting fecundity in the field) varied between `r paste(min(filter(clutch_data, clutch_num == 1)$clutch_size), "and", max(filter(clutch_data, clutch_num == 1)$clutch_size), sep = " ")` eggs. 
 
-```{r}
+```{r clutch-hist}
 clutch_data %>% 
   filter(clutch_num == 1) %>%  
   ggplot(aes(x = clutch_size)) +
@@ -114,7 +114,7 @@ clutch_data %>%
   theme_matt()
 ```
 
-```{r}
+```{r clutch-treatments, include = F}
 if(length(unique(clutch_data$clutch_num)) > 1){
   ggplot(clutch_data, aes(x = clutch_num, y = clutch_size, group = ID, colour = treatment)) + 
     geom_point(size = 2) + 
@@ -135,7 +135,7 @@ if(length(unique(clutch_data$clutch_num)) > 1){
 ```
 
 Eggs took between `r paste(min(filter(clutch_data, clutch_num == 1)$clutch_hold_time, na.rm = T), "and", max(filter(clutch_data, clutch_num == 1)$clutch_hold_time, na.rm = T), sep = " ")` days to hatch. 
-```{r}
+```{r hold-times}
 ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) + 
   geom_boxplot() + 
   geom_point(size = 3, alpha = 0.4, position = position_jitter(width = 0.05, height = 0)) + 
@@ -145,7 +145,7 @@ ggplot(clutch_data, aes(x = treatment, y = clutch_hold_time)) +
   theme_matt()
 ```
 
-```{r}
+```{r size-model}
 size_fec.model = lm(data = size_egg, clutch_size ~ length)
 
 egg_slope = coefficients(size_fec.model)[2]
@@ -153,7 +153,7 @@ egg_slope = coefficients(size_fec.model)[2]
 
 We might expect that larger females produce larger clutches of eggs. While limited by the small sample size, we see a positive trend here, where fecundity increases by about `r round(unname(egg_slope), digits = 1)` eggs per 0.1 mm in size.
 
-```{r}
+```{r size-fecundity-plot}
 size_egg = inner_join(clutch_data, mutate(size_data, cup = as.numeric(cup)), by = c("exp_rep", "cup", "treatment", "volume")) %>% 
   select(exp_rep, cup, treatment, clutch_size, length)
 
@@ -166,7 +166,7 @@ ggplot(size_egg, aes(x = length, y = clutch_size)) +
   theme_matt()
 ```
 
-```{r}
+```{r size-fecundity-anova}
 knitr::kable(car::Anova(size_fec.model, type = "III"))
 ```
 

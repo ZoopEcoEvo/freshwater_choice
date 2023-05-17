@@ -1,20 +1,4 @@
 
-# # TOY DATA - DELETE WHEN DATA COLLECTION IS COMPLETED
-# for(i in 1:length(raw_surv_data$cup)){
-#   dd = sample(x = c(5:26), size = 1)
-#   
-#   if(dd <= 19){
-#     raw_surv_data[i,dd:length(raw_surv_data[i,])] = 0
-#   }
-# }
-# 
-# for(i in 1:28){
-#   events = sort(sample(x = c(7:18), size = 3))
-#   raw_fecund_data[i,events[1]] = "released"
-#   raw_fecund_data[i,events[2]] = as.character(sample(seq(4,20), size = 1))
-#   raw_fecund_data[i,events[3]] = "released"
-# }
-
 ### Formatting survival and mortality data 
 surv = raw_surv_data %>%  
   pivot_longer(cols = starts_with("day"), # Changes data from wide to long format
